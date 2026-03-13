@@ -5,7 +5,7 @@ import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { useAuth } from "@/contexts/authContext";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Loading from "@/components/shared/loading";
 
 const adminOnlyPaths = ["/dashboard/products", "/dashboard/categories", "/dashboard/users"];
@@ -14,6 +14,7 @@ export default function DashboardLayout({ children }) {
     const { user, loading, isAdmin } = useAuth();
     const router = useRouter();
     const pathname = usePathname();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -30,6 +31,18 @@ export default function DashboardLayout({ children }) {
         }
     }, [user, loading, isAdmin, pathname, router]);
 
+    // Close sidebar when route changes (mobile)
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) {
+                setSidebarOpen(false);
+            }
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -44,10 +57,19 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className="flex min-h-screen">
-            <Sidebar isAdmin={isAdmin} />
+            {/* Mobile sidebar overlay */}
+            {sidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+            
+            <Sidebar isAdmin={isAdmin} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+            
             <div className="flex flex-col flex-1">
-                <Navbar />
-                <main className="flex-1 p-6 bg-gray-50">
+                <Navbar onMenuClick={() => setSidebarOpen(true)} />
+                <main className="flex-1 p-4 md:p-6 bg-gray-50">
                     {children}
                 </main>
                 <Footer />
