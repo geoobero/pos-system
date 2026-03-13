@@ -1,15 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import { signIn } from "@/lib/supabase/auth";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const router = useRouter();
 
-    function handleSubmit(e) {
+    async function handleSubmit(e) {
         e.preventDefault();
-        // Supabase auth will be added later
-        console.log("Login:", { email, password });
+        setLoading(true);
+        setError("");
+
+        const { data, error: authError } = await signIn(email, password);
+
+        if (authError) {
+            setError(authError.message);
+            setLoading(false);
+            return;
+        }
+
+        router.push("/dashboard/pos");
     }
 
     return (
@@ -48,10 +63,15 @@ export default function LoginPage() {
 
                     <button
                         type="submit"
-                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                        disabled={loading}
+                        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
                     >
-                        Login
+                        {loading ? "Logging in..." : "Login"}
                     </button>
+
+                    {error && (
+                        <p className="text-red-600 text-sm text-center">{error}</p>
+                    )}
                 </form>
 
             </div>

@@ -10,6 +10,7 @@ import { createTransaction } from "@/lib/supabase/transactions";
 import Loading from "@/components/shared/loading";
 import Error from "@/components/shared/error";
 import { getCategories } from "@/lib/supabase/categories";
+import { useAuth } from "@/contexts/authContext";
 
 export default function POSPage() {
     const [products, setProducts] = useState([]);
@@ -17,6 +18,7 @@ export default function POSPage() {
     const [transaction, setTransaction] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const { user } = useAuth();
 
     // Reset transaction to start a new sale
     const startNewSale = () => {
@@ -25,25 +27,12 @@ export default function POSPage() {
 
 
     useEffect(() => {
-        async function testCategories() {
-            const { data, error } = await getCategories();
-            console.log("CATEGORIES:", data);
-            console.log("ERROR:", error);
-        }
-
-        testCategories();
-    }, []);
-
-
-    // Load products on mount
-    useEffect(() => {
         async function loadProducts() {
             const { data, error } = await getProducts();
             if (error) {
-                console.error("PRODUCT ERROR:", error);
+                setError(error.message);
                 return;
             }
-            console.log("PRODUCTS:", data);
             setProducts(data);
         }
 
@@ -96,12 +85,20 @@ export default function POSPage() {
     const handleConfirmPayment = async ({ total, cash, change }) => {
         try {
             setLoading(true);
+            const cashierName = user?.name || user?.email || "Unknown";
+            
+            // Extract product names and categories from cart items
+            const productNames = cartItems.map(item => item.name);
+            const categories = cartItems.map(item => item.category_name || item.category || "Unknown");
+            
             const { data, error } = await createTransaction({
                 items: cartItems,
                 total,
                 cash,
                 change,
-                cashier: "Admin",
+                cashier: cashierName,
+                product_names: productNames.join(", "),
+                categories: categories.join(", "),
             });
 
             if (error) {
@@ -114,7 +111,7 @@ export default function POSPage() {
                 total,
                 cash,
                 change,
-                cashier: "Admin",
+                cashier: cashierName,
                 date: new Date().toISOString(),
             });
 

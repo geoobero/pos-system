@@ -1,10 +1,23 @@
 import { supabase } from "./client";
 
-// Get all products
+// Get all products with category name
 export async function getProducts() {
     const { data, error } = await supabase
         .from("products")
-        .select("*");
+        .select("*")
+        .order("name", { ascending: true });
+    
+    if (data && data.length > 0) {
+        const { data: categories } = await supabase.from("categories").select("id, name");
+        
+        const productsWithCategoryName = data.map(product => ({
+            ...product,
+            category_name: categories?.find(c => c.id === product.category)?.name || "Unknown"
+        }));
+        
+        return { data: productsWithCategoryName, error };
+    }
+    
     return { data, error };
 }
 

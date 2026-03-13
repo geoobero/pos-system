@@ -1,16 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Button from "@/components/ui/button";
 
 export default function Payment({ total = 0, onConfirm }) {
   const [cash, setCash] = useState("");
-  const [change, setChange] = useState(0);
 
-  useEffect(() => {
-    const cashAmount = parseFloat(cash) || 0;
-    setChange(cashAmount - total);
-  }, [cash, total]);
+  const cashAmount = parseFloat(cash) || 0;
+  const change = cashAmount - total;
 
   const handleSubmit = (e) => {
     e.preventDefault();

@@ -9,9 +9,9 @@ export async function getTransactions() {
 }
 
 // Create a transaction
-export async function createTransaction({ items, total, cash, change, cashier }) {
+export async function createTransaction({ items, total, cash, change, cashier, product_names, categories }) {
     const { data, error } = await supabase.from("transactions").insert([
-        { items, total, cash, change, cashier },
+        { items, total, cash, change, cashier, product_names, categories },
     ]);
     return { data, error };
 }

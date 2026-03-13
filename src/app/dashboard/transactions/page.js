@@ -38,6 +38,8 @@ export default function TransactionsPage() {
                     <thead>
                         <tr className="border-b">
                             <th className="text-left py-2">Date</th>
+                            <th className="text-left py-2">Products</th>
+                            <th className="text-left py-2">Category</th>
                             <th className="text-left py-2">Cashier</th>
                             <th className="text-right py-2">Total</th>
                             <th className="text-right py-2">Cash</th>
@@ -50,10 +52,12 @@ export default function TransactionsPage() {
                                 <td className="py-2">
                                     {new Date(t.created_at).toLocaleString()}
                                 </td>
+                                <td className="py-2">{t.product_names || "-"}</td>
+                                <td className="py-2">{t.categories || "-"}</td>
                                 <td className="py-2">{t.cashier}</td>
-                                <td className="py-2 text-right">₱{t.total.toFixed(2)}</td>
-                                <td className="py-2 text-right">₱{t.cash.toFixed(2)}</td>
-                                <td className="py-2 text-right">₱{t.change.toFixed(2)}</td>
+                                <td className="py-2 text-right">₱{Number(t.total).toFixed(2)}</td>
+                                <td className="py-2 text-right">₱{Number(t.cash).toFixed(2)}</td>
+                                <td className="py-2 text-right">₱{Number(t.change).toFixed(2)}</td>
                             </tr>
                         ))}
                     </tbody>
