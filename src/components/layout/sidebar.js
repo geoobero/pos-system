@@ -16,7 +16,7 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
                 <div className="px-6 py-4 text-xl font-bold border-b border-gray-700 flex items-center justify-between">
                     <span>POS System</span>
                     {/* Close button for mobile */}
-                    <button 
+                    <button
                         onClick={onClose}
                         className="lg:hidden p-1 hover:bg-gray-700 rounded"
                     >
@@ -33,14 +33,14 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
                     <Link href="/dashboard/transactions" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
                         Transactions
                     </Link>
-                    <Link href="/dashboard/analytics" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
-                        Analytics
-                    </Link>
-                    
+
                     {isAdmin && (
                         <>
                             <div className="border-t border-gray-700 my-2"></div>
                             <p className="px-3 text-xs font-thin text-red-600 uppercase">Admin</p>
+                            <Link href="/dashboard/analytics" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
+                                Analytics
+                            </Link>
                             <Link href="/dashboard/categories" className="block px-3 py-2 hover:text-gray-200 rounded hover:bg-gray-700">
                                 Categories
                             </Link>
