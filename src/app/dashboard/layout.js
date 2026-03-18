@@ -8,7 +8,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "@/components/shared/loading";
 
-const adminOnlyPaths = ["/dashboard/products", "/dashboard/categories", "/dashboard/users", "/dashboard/analytics"];
+const adminOnlyPaths = ["/dashboard/products", "/dashboard/categories", "/dashboard/users", "/dashboard/overview"];
 
 export default function DashboardLayout({ children }) {
     const { user, loading, isAdmin } = useAuth();

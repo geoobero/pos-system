@@ -23,7 +23,7 @@ export default function Navbar({ onMenuClick }) {
     };
 
     return (
-        <header className="h-14 bg-white border-b flex items-center justify-between px-4 md:px-6">
+        <header className="h-14 bg-white border-b flex items-center justify-between px-4 md:px-6 lg:relative fixed md:fixed w-full">
             <div className="flex items-center gap-3">
                 {/* Mobile menu button */}
                 <button 
@@ -37,7 +37,7 @@ export default function Navbar({ onMenuClick }) {
             </div>
 
             <div className="flex items-center gap-4">
-                <span className="text-sm text-gray-600 hidden sm:block">
+                <span className="text-sm text-gray-600 hidden sm:block cursor-default">
                     {user?.name || user?.email}
                     <span className={`ml-2 px-2 py-0.5 text-xs rounded ${isAdmin ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
                         {isAdmin ? "Admin" : "Cashier"}
@@ -45,7 +45,7 @@ export default function Navbar({ onMenuClick }) {
                 </span>
                 <button
                     onClick={handleSignOut}
-                    className="text-sm text-red-600 hover:underline"
+                    className="text-sm text-gray-600 hover:text-red-600 duration-300 cursor-pointer"
                 >
                     Sign Out
                 </button>

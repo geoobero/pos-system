@@ -5,7 +5,7 @@ import { getTransactions } from "@/lib/supabase/transactions";
 import Loading from "@/components/shared/loading";
 import Error from "@/components/shared/error";
 
-export default function AnalyticsPage() {
+export default function OverviewPage() {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
@@ -241,7 +241,7 @@ export default function AnalyticsPage() {
     return (
         <div className="space-y-6 text-black">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <h1 className="text-2xl font-bold">Analytics</h1>
+                <h1 className="text-2xl font-bold">Overview</h1>
                 
                 <select
                     value={period}

@@ -124,7 +124,7 @@ export default function TransactionsPage() {
                         </p>
                     </div>
 
-                    <div className="overflow-x-auto">
+                    <div className="overflow-y-auto max-h-120 max-w-[100%]">
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr className="border-b">
