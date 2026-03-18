@@ -27,13 +27,13 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
                 </div>
 
                 <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-                    <Link href="/dashboard/pos" className="block px-3 py-2 rounded hover:bg-gray-700">
+                    <Link href="/dashboard/pos" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
                         POS
                     </Link>
-                    <Link href="/dashboard/transactions" className="block px-3 py-2 rounded hover:bg-gray-700">
+                    <Link href="/dashboard/transactions" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
                         Transactions
                     </Link>
-                    <Link href="/dashboard/analytics" className="block px-3 py-2 rounded hover:bg-gray-700">
+                    <Link href="/dashboard/analytics" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
                         Analytics
                     </Link>
                     
@@ -41,13 +41,13 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
                         <>
                             <div className="border-t border-gray-700 my-2"></div>
                             <p className="px-3 text-xs font-thin text-red-600 uppercase">Admin</p>
-                            <Link href="/dashboard/categories" className="block px-3 py-2 rounded hover:bg-gray-700">
+                            <Link href="/dashboard/categories" className="block px-3 py-2 hover:text-gray-200 rounded hover:bg-gray-700">
                                 Categories
                             </Link>
-                            <Link href="/dashboard/products" className="block px-3 py-2 rounded hover:bg-gray-700">
+                            <Link href="/dashboard/products" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
                                 Products
                             </Link>
-                            <Link href="/dashboard/users" className="block px-3 py-2 rounded hover:bg-gray-700">
+                            <Link href="/dashboard/users" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-gray-200">
                                 Users
                             </Link>
                         </>
