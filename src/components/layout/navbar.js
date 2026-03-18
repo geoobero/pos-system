@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/authContext";
 import { signOut } from "@/lib/supabase/auth";
+import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function Navbar({ onMenuClick }) {
@@ -9,6 +10,14 @@ export default function Navbar({ onMenuClick }) {
     const router = useRouter();
 
     const handleSignOut = async () => {
+        // Remove session from database
+        if (user?.id) {
+            await supabase
+                .from("user_sessions")
+                .delete()
+                .eq("user_id", user.id);
+        }
+        
         await signOut();
         router.push("/login");
     };

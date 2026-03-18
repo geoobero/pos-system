@@ -2,7 +2,36 @@
 
 import { useState } from "react";
 import { signIn } from "@/lib/supabase/auth";
+import { supabase } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+
+function getDeviceInfo() {
+    const ua = navigator.userAgent;
+    let device = "Unknown Device";
+    
+    if (ua.includes("Mobile")) {
+        device = "Mobile Device";
+    } else if (ua.includes("Tablet")) {
+        device = "Tablet";
+    } else {
+        device = "Computer";
+    }
+    
+    let browser = "Unknown Browser";
+    if (ua.includes("Chrome")) browser = "Chrome";
+    else if (ua.includes("Firefox")) browser = "Firefox";
+    else if (ua.includes("Safari")) browser = "Safari";
+    else if (ua.includes("Edge")) browser = "Edge";
+    
+    let os = "Unknown OS";
+    if (ua.includes("Windows")) os = "Windows";
+    else if (ua.includes("Mac")) os = "Mac";
+    else if (ua.includes("Linux")) os = "Linux";
+    else if (ua.includes("Android")) os = "Android";
+    else if (ua.includes("iOS")) os = "iOS";
+    
+    return `${browser} (${os}) - ${device}`;
+}
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -16,6 +45,7 @@ export default function LoginPage() {
         setLoading(true);
         setError("");
 
+        // First, sign in to check credentials
         const { data, error: authError } = await signIn(email, password);
 
         if (authError) {
@@ -23,6 +53,29 @@ export default function LoginPage() {
             setLoading(false);
             return;
         }
+
+        // Check if user already has an active session
+        const { data: existingSession } = await supabase
+            .from("user_sessions")
+            .select("*")
+            .eq("user_id", data.user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+        if (existingSession) {
+            // User already logged in elsewhere - sign out and show error
+            await supabase.auth.signOut();
+            setError(`User is already logged in on: ${existingSession.device_info}`);
+            setLoading(false);
+            return;
+        }
+
+        // Create new session record
+        await supabase.from("user_sessions").insert({
+            user_id: data.user.id,
+            device_info: getDeviceInfo(),
+        });
 
         router.push("/dashboard/pos");
     }
