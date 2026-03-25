@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
-const INACTIVITY_TIMEOUT = 0 * 1 * 0 * 1000;
+const INACTIVITY_TIMEOUT = 13 * 0 * 0 * 1000;
 const STORAGE_KEY = 'lastActivity';
 
 const AuthContext = createContext(null);
