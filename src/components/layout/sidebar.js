@@ -8,7 +8,7 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
             {/* Mobile sidebar - slide in from left */}
             <aside className={`
                 fixed lg:static inset-y-0 left-0 z-50 
-                w-64 lg:bg-slate-900 md:bg-red-800/40 backdrop-blur-sm text-gray-300 flex flex-col
+                w-64 lg:bg-blue-900 md:bg-red-800/40 backdrop-blur-sm text-gray-50 flex flex-col
                 transform transition-transform duration-200 ease-in-out
                 lg:transform-none
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
@@ -27,10 +27,10 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
                 </div>
 
                 <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
-                    <Link href="/dashboard/pos" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-amber-400">
+                    <Link href="/dashboard/pos" className="block px-3 py-2 rounded hover:text-amber-400 duration-300">
                         POS
                     </Link>
-                    <Link href="/dashboard/transactions" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-amber-400">
+                    <Link href="/dashboard/transactions" className="block px-3 py-2 rounded hover:text-amber-400 duration-300">
                         Transactions
                     </Link>
 
@@ -38,16 +38,16 @@ export default function Sidebar({ isAdmin = false, isOpen = false, onClose }) {
                         <>
                             <div className="border-t border-gray-700 my-2"></div>
                             <p className="px-3 text-xs font-thin text-red-600 uppercase">Admin</p>
-                            <Link href="/dashboard/overview" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-amber-400">
+                            <Link href="/dashboard/overview" className="block px-3 py-2 rounded hover:text-amber-400 duration-300">
                                 Overview
                             </Link>
-                            <Link href="/dashboard/categories" className="block px-3 py-2 hover:text-amber-400 rounded hover:bg-gray-700">
+                            <Link href="/dashboard/categories" className="block px-3 py-2 hover:text-amber-400 rounded duration-300">
                                 Categories
                             </Link>
-                            <Link href="/dashboard/products" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-amber-400">
+                            <Link href="/dashboard/products" className="block px-3 py-2 rounded hover:text-amber-400 duration-300">
                                 Products
                             </Link>
-                            <Link href="/dashboard/users" className="block px-3 py-2 rounded hover:bg-gray-700 hover:text-amber-400">
+                            <Link href="/dashboard/users" className="block px-3 py-2 rounded hover:text-amber-400 duration-300">
                                 Users
                             </Link>
                         </>
