@@ -10,23 +10,26 @@ export default function Navbar({ onMenuClick }) {
     const router = useRouter();
 
     const handleSignOut = async () => {
-        // Remove session from database
         if (user?.id) {
-            await supabase
+            const { error } = await supabase
                 .from("user_sessions")
                 .delete()
                 .eq("user_id", user.id);
+
+            if (error) {
+                console.error("Error deleting session:", error);
+            }
         }
-        
+
         await signOut();
-        router.push("/login");
+        window.location.href = '/login';
     };
 
     return (
         <header className="h-14 bg-white border-b flex items-center justify-between px-4 md:px-6 lg:relative fixed md:fixed w-full">
             <div className="flex items-center gap-3">
                 {/* Mobile menu button */}
-                <button 
+                <button
                     onClick={onMenuClick}
                     className="lg:hidden p-2 hover:bg-gray-100 rounded"
                 >
