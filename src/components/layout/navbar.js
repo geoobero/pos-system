@@ -31,7 +31,7 @@ export default function Navbar({ onMenuClick }) {
 
             <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600 hidden sm:block cursor-default">
-                    {user?.name || user?.email}
+                    {user?.email}
                     <span className={`ml-2 px-2 py-0.5 text-xs rounded ${isAdmin ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
                         {isAdmin ? "Admin" : "Cashier"}
                     </span>
