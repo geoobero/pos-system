@@ -10,20 +10,10 @@ export default function Navbar({ onMenuClick }) {
     const router = useRouter();
 
     const handleSignOut = async () => {
-        if (user?.id) {
-            const { error } = await supabase
-                .from("user_sessions")
-                .delete()
-                .eq("user_id", user.id);
-
-            if (error) {
-                console.error("Error deleting session:", error);
-            }
-        }
-
         await signOut();
         window.location.href = '/login';
     };
+
 
     return (
         <header className="h-14 bg-white border-b flex items-center justify-between px-4 md:px-6 lg:relative fixed md:fixed w-full">

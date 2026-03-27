@@ -1,9 +1,9 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 
-const INACTIVITY_TIMEOUT = 13 * 0 * 0 * 1000;
+const INACTIVITY_TIMEOUT = 13 * 60 * 60 * 1000;
 const STORAGE_KEY = 'lastActivity';
 
 const AuthContext = createContext(null);
@@ -12,49 +12,35 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    const updateActivity = () => {
+    const updateActivity = useCallback(() => {
         if (user) {
             localStorage.setItem(STORAGE_KEY, Date.now().toString());
         }
-    };
+    }, [user]);
 
-    const checkInactivity = () => {
+    const checkInactivity = useCallback(() => {
         if (!user) return false;
         const lastActivity = localStorage.getItem(STORAGE_KEY);
         if (!lastActivity) return false;
         const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
         return timeSinceLastActivity > INACTIVITY_TIMEOUT;
-    };
+    }, [user]);
 
-    const handleInactivityLogout = async () => {
-        if (user) {
-            await supabase
-                .from("user_sessions")
-                .delete()
-                .eq("user_id", user.id);
-        }
-        localStorage.removeItem(STORAGE_KEY);
+    const handleInactivityLogout = useCallback(async () => {
+        localStorage.removeItem('lastActivity');
         await supabase.auth.signOut();
         setUser(null);
         window.location.href = '/login?reason=inactivity';
-    };
+    }, []);
+
 
     useEffect(() => {
         async function checkUser() {
             const { data: { session } } = await supabase.auth.getSession();
-            
+
             if (session?.user) {
-                const lastActivity = localStorage.getItem(STORAGE_KEY);
-                if (lastActivity) {
-                    const timeSinceLastActivity = Date.now() - parseInt(lastActivity, 10);
-                    if (timeSinceLastActivity > INACTIVITY_TIMEOUT) {
-                        await handleInactivityLogout();
-                        return;
-                    }
-                }
-                
                 localStorage.setItem(STORAGE_KEY, Date.now().toString());
-                
+
                 const userRole = session.user.user_metadata?.role || "cashier";
                 setUser({
                     id: session.user.id,
@@ -89,7 +75,7 @@ export function AuthProvider({ children }) {
         if (!user) return;
 
         const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-        
+
         const handleActivity = () => {
             updateActivity();
         };
@@ -112,7 +98,7 @@ export function AuthProvider({ children }) {
             });
             clearInterval(intervalId);
         };
-    }, [user]);
+    }, [user, updateActivity, checkInactivity, handleInactivityLogout]);
 
     const isAdmin = user?.role === "admin";
     const isCashier = user?.role === "cashier";
