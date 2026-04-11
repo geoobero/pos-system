@@ -11,6 +11,7 @@ export default function TransactionsPage() {
     const [error, setError] = useState("");
     const [dateFilter, setDateFilter] = useState("all");
     const printRef = useRef();
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
 
     useEffect(() => {
         async function loadTransactions() {
@@ -32,7 +33,7 @@ export default function TransactionsPage() {
 
         return transactions.filter(t => {
             const transDate = new Date(t.created_at);
-            
+
             switch (dateFilter) {
                 case "today":
                     return transDate >= today;
@@ -57,7 +58,7 @@ export default function TransactionsPage() {
     const handlePrint = () => {
         const printContent = printRef.current;
         const originalContents = document.body.innerHTML;
-        
+
         const printWindow = window.open('', '', 'height=600,width=800');
         printWindow.document.write('<html><head><title>Transactions Report</title>');
         printWindow.document.write('<style>');
@@ -77,17 +78,39 @@ export default function TransactionsPage() {
         printWindow.print();
     };
 
+    const formatItems = (items) => {
+        if (!Array.isArray(items)) return "-";
+        return items.map((item) => item.name).join(", ");
+    };
+
+    const formatCategories = (items) => {
+        if (!Array.isArray(items)) return "-";
+        const categories = items
+            .map((item) => item.category_name || item.category || "Unknown");
+        return [...new Set(categories)].join(", ");
+    };
+
     const filteredTransactions = getFilteredTransactions();
     const grandTotal = filteredTransactions.reduce((sum, t) => sum + Number(t.total || 0), 0);
 
     if (loading) return <Loading />;
     if (error) return <Error message={error} />;
 
+    const formatItemDetails = (items) => {
+        if (!Array.isArray(items)) return [];
+        return items.map((item) => ({
+            name: item.name,
+            price: Number(item.price || 0),
+            quantity: item.quantity || 1,
+            total: Number(item.price || 0) * (item.quantity || 1),
+        }));
+    };
+
     return (
         <div className="bg-white p-4 md:p-6 rounded-lg shadow text-gray-700">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h1 className="text-2xl font-bold">Transactions</h1>
-                
+
                 <div className="flex flex-wrap gap-2 no-print">
                     <select
                         value={dateFilter}
@@ -117,10 +140,10 @@ export default function TransactionsPage() {
                     <div className="hidden print:block mb-4">
                         <h1>Transactions Report</h1>
                         <p className="text-sm text-gray-500">
-                            {dateFilter === "all" ? "All Time" : 
-                             dateFilter === "today" ? "Today" :
-                             dateFilter === "weekly" ? "This Week" :
-                             dateFilter === "monthly" ? "This Month" : "This Year"}
+                            {dateFilter === "all" ? "All Time" :
+                                dateFilter === "today" ? "Today" :
+                                    dateFilter === "weekly" ? "This Week" :
+                                        dateFilter === "monthly" ? "This Month" : "This Year"}
                         </p>
                     </div>
 
@@ -139,12 +162,16 @@ export default function TransactionsPage() {
                             </thead>
                             <tbody>
                                 {filteredTransactions.map((t) => (
-                                    <tr key={t.id} className="border-b text-sm">
+                                    <tr
+                                        key={t.id}
+                                        className="border-b text-sm cursor-pointer hover:bg-gray-50"
+                                        onClick={() => setSelectedTransaction(t)}
+                                    >
                                         <td className="py-2">
                                             {new Date(t.created_at).toLocaleString()}
                                         </td>
-                                        <td className="py-2 text-xs sm:text-sm">{t.product_names || "-"}</td>
-                                        <td className="py-2 text-xs sm:text-sm hidden sm:table-cell">{t.categories || "-"}</td>
+                                        <td className="py-2 text-xs sm:text-sm">{formatItems(t.items)}</td>
+                                        <td className="py-2 text-xs sm:text-sm hidden sm:table-cell">{formatCategories(t.items)}</td>
                                         <td className="py-2 text-xs sm:text-sm hidden md:table-cell">{t.cashier}</td>
                                         <td className="py-2 text-right font-medium">₱{Number(t.total).toFixed(2)}</td>
                                         <td className="py-2 text-right hidden sm:table-cell">₱{Number(t.cash).toFixed(2)}</td>
@@ -161,6 +188,57 @@ export default function TransactionsPage() {
                                 </tr>
                             </tfoot>
                         </table>
+                    </div>
+                </div>
+            )}
+            {selectedTransaction && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg shadow-lg max-w-lg w-full max-h-[80vh] overflow-y-auto">
+                        <div className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                                <h2 className="text-xl font-bold">Transaction Details</h2>
+                                <button
+                                    onClick={() => setSelectedTransaction(null)}
+                                    className="text-gray-500 hover:text-gray-700 text-xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+
+                            <div className="text-sm mb-4">
+                                <p><strong>ID:</strong> {selectedTransaction.id}</p>
+                                <p><strong>Date:</strong> {new Date(selectedTransaction.created_at).toLocaleString()}</p>
+                                <p><strong>Cashier:</strong> {selectedTransaction.cashier}</p>
+                            </div>
+
+                            <hr className="my-4" />
+
+                            <div className="space-y-2">
+                                {formatItemDetails(selectedTransaction.items).map((item, i) => (
+                                    <div key={i} className="flex justify-between text-sm">
+                                        <span>{item.name} × {item.quantity}</span>
+                                        <span>₱{item.total.toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <hr className="my-4" />
+
+                            <div className="space-y-1 text-sm">
+                                <div className="flex justify-between font-semibold">
+                                    <span>Total</span>
+                                    <span>₱{Number(selectedTransaction.total).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Cash</span>
+                                    <span>₱{Number(selectedTransaction.cash).toFixed(2)}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span>Change</span>
+                                    <span>₱{Number(selectedTransaction.change).toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

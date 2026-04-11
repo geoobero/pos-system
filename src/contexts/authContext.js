@@ -48,6 +48,8 @@ export function AuthProvider({ children }) {
                     role: userRole,
                     name: session.user.user_metadata?.name || session.user.email,
                 });
+            } else {
+                localStorage.removeItem(STORAGE_KEY);
             }
             setLoading(false);
         }
@@ -64,6 +66,7 @@ export function AuthProvider({ children }) {
                     name: session.user.user_metadata?.name || session.user.email,
                 });
             } else {
+                localStorage.removeItem(STORAGE_KEY);
                 setUser(null);
             }
         });

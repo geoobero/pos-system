@@ -1,5 +1,9 @@
 import { supabase } from "./client";
 
+function buildValidationError(message) {
+    return { data: null, error: new Error(message) };
+}
+
 export async function getCategories() {
     return await supabase
         .from("categories")
@@ -8,6 +12,10 @@ export async function getCategories() {
 }
 
 export async function createCategory({ name }) {
+    if (!name?.trim()) {
+        return buildValidationError("Category name is required.");
+    }
+
     const { data, error } = await supabase
         .from("categories")
         .insert([{ name }]);
@@ -15,6 +23,14 @@ export async function createCategory({ name }) {
 }
 
 export async function updateCategory(id, { name }) {
+    if (!id) {
+        return buildValidationError("Category id is required.");
+    }
+
+    if (!name?.trim()) {
+        return buildValidationError("Category name is required.");
+    }
+
     const { data, error } = await supabase
         .from("categories")
         .update({ name })

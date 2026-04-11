@@ -1,18 +1,38 @@
 import { supabase } from "./client";
 
+function buildValidationError(message) {
+    return { data: null, error: new Error(message) };
+}
+
 // Get all transactions
 export async function getTransactions() {
-  return await supabase
-    .from("transactions")
-    .select("*")
-    .order("created_at", { ascending: false });
+    return await supabase
+        .from("transactions")
+        .select("*")
+        .order("created_at", { ascending: false });
 }
 
 // Create a transaction
-export async function createTransaction({ items, total, cash, change, cashier, product_names, categories }) {
-    const { data, error } = await supabase.from("transactions").insert([
-        { items, total, cash, change, cashier, product_names, categories },
-    ]);
+export async function createTransaction({ items, total, cash, change, cashier }) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return buildValidationError("Transaction items are required.");
+    }
+
+    if (!Number.isFinite(Number(total)) || !Number.isFinite(Number(cash)) || !Number.isFinite(Number(change))) {
+        return buildValidationError("Transaction totals must be valid numbers.");
+    }
+
+    if (!cashier || typeof cashier !== "string") {
+        return buildValidationError("Cashier is required.");
+    }
+
+    const { data, error } = await supabase
+        .from("transactions")
+        .insert([
+            { items, total, cash, change, cashier },
+        ])
+        .select("*")
+        .single();
     return { data, error };
 }
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getProducts, createProduct, updateProduct, deleteProduct } from "@/lib/supabase/products";
 import { getCategories } from "@/lib/supabase/categories";
+import { supabase } from "@/lib/supabase/client";
 import Loading from "@/components/shared/loading";
 import Error from "@/components/shared/error";
 
@@ -12,13 +13,15 @@ export default function ProductsPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [editingProduct, setEditingProduct] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     const [newProduct, setNewProduct] = useState({
         name: "",
         categoryId: "",
         price: "",
-        barcode: "",
     });
+
+    const [newImage, setNewImage] = useState(null);
 
     useEffect(() => {
         async function loadData() {
@@ -26,35 +29,69 @@ export default function ProductsPage() {
                 getProducts(),
                 getCategories()
             ]);
-            
+
             if (productsRes.error) {
                 setError(productsRes.error.message);
             } else {
                 setProducts(productsRes.data);
             }
-            
+
             if (categoriesRes.error) {
                 setError(categoriesRes.error.message);
             } else {
                 setCategories(categoriesRes.data);
             }
-            
+
             setLoading(false);
         }
         loadData();
     }, []);
 
+    async function uploadImage(file) {
+        if (!file) return null;
+
+        setUploading(true);
+
+        const fileName = `${Date.now()}-${file.name}`;
+
+        const { data, error } = await supabase.storage
+            .from("product-images")
+            .upload(fileName, file, {
+                cacheControl: "3600",
+                upsert: false,
+            });
+
+        setUploading(false);
+
+        if (error) {
+            console.error("Upload error:", error);
+            alert("Failed to upload image: " + error.message);
+            return null;
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+            .from("product-images")
+            .getPublicUrl(fileName);
+
+        return publicUrl;
+    }
+
     async function handleAddProduct(e) {
         e.preventDefault();
 
-        if (!newProduct.name || !newProduct.categoryId || !newProduct.price || !newProduct.barcode)
+        if (!newProduct.name || !newProduct.categoryId || !newProduct.price)
             return;
+
+        let imageUrl = null;
+        if (newImage) {
+            imageUrl = await uploadImage(newImage);
+        }
 
         const { data, error } = await createProduct({
             name: newProduct.name,
             price: parseFloat(newProduct.price),
-            barcode: newProduct.barcode,
             category: newProduct.categoryId,
+            image_url: imageUrl,
         });
 
         if (error) {
@@ -62,22 +99,28 @@ export default function ProductsPage() {
             return;
         }
 
-        // Reload products from Supabase to get the correct data
         const { data: refreshedProducts } = await getProducts();
         setProducts(refreshedProducts || []);
 
-        setNewProduct({ name: "", categoryId: "", price: "", barcode: "" });
+        setNewProduct({ name: "", categoryId: "", price: "" });
+        setNewImage(null);
     }
 
     async function handleUpdateProduct(e) {
         e.preventDefault();
         if (!editingProduct) return;
 
+        let imageUrl = editingProduct.image_url;
+
+        if (editingProduct.newImage) {
+            imageUrl = await uploadImage(editingProduct.newImage);
+        }
+
         const { error } = await updateProduct(editingProduct.id, {
             name: editingProduct.name,
             category: editingProduct.category,
             price: parseFloat(editingProduct.price),
-            barcode: editingProduct.barcode,
+            image_url: imageUrl,
         });
 
         if (error) {
@@ -85,9 +128,8 @@ export default function ProductsPage() {
             return;
         }
 
-        setProducts(products.map(p => 
-            p.id === editingProduct.id ? editingProduct : p
-        ));
+        const { data: refreshedProducts } = await getProducts();
+        setProducts(refreshedProducts || []);
         setEditingProduct(null);
     }
 
@@ -138,18 +180,40 @@ export default function ProductsPage() {
                             onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })}
                         />
                         <input
-                            type="text"
-                            placeholder="Barcode"
+                            type="file"
+                            accept="image/*"
                             className="border border-gray-300 rounded px-3 py-2"
-                            value={editingProduct.barcode}
-                            onChange={(e) => setEditingProduct({ ...editingProduct, barcode: e.target.value })}
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    setEditingProduct({ ...editingProduct, newImage: file });
+                                }
+                            }}
                         />
+                        {/* Show current image */}
+                        <div className="md:col-span-4">
+                            {editingProduct.image_url ? (
+                                <div className="flex items-center gap-4">
+                                    <img
+                                        src={editingProduct.image_url}
+                                        alt="Current"
+                                        className="w-20 h-20 object-cover rounded"
+                                    />
+                                    <span className="text-sm text-gray-500">
+                                        {editingProduct.newImage ? `New: ${editingProduct.newImage.name}` : "Leave empty to keep current image"}
+                                    </span>
+                                </div>
+                            ) : (
+                                <span className="text-sm text-gray-500">No image set</span>
+                            )}
+                        </div>
                         <div className="md:col-span-4 flex gap-2">
                             <button
                                 type="submit"
+                                disabled={uploading}
                                 className="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700"
                             >
-                                Save Changes
+                                {uploading ? "Saving..." : "Save Changes"}
                             </button>
                             <button
                                 type="button"
@@ -196,18 +260,18 @@ export default function ProductsPage() {
                 />
 
                 <input
-                    type="text"
-                    placeholder="Barcode"
+                    type="file"
+                    accept="image/*"
                     className="border border-gray-300 rounded px-3 py-2"
-                    value={newProduct.barcode}
-                    onChange={(e) => setNewProduct({ ...newProduct, barcode: e.target.value })}
+                    onChange={(e) => setNewImage(e.target.files[0])}
                 />
 
                 <button
                     type="submit"
-                    className="md:col-span-4 max-w-50 cursor-pointer duration-300 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                    disabled={uploading}
+                    className="md:col-span-4 max-w-50 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
                 >
-                    Add Product
+                    {uploading ? "Adding..." : "Add Product"}
                 </button>
             </form>
 
@@ -215,10 +279,10 @@ export default function ProductsPage() {
                 <table className="min-w-full">
                     <thead className="bg-gray-50">
                         <tr>
+                            <th className="px-4 py-2 text-left">Image</th>
                             <th className="px-4 py-2 text-left">Name</th>
                             <th className="px-4 py-2 text-left">Category</th>
                             <th className="px-4 py-2 text-left">Price</th>
-                            <th className="px-4 py-2 text-left">Barcode</th>
                             <th className="px-4 py-2 text-left">Actions</th>
                         </tr>
                     </thead>
@@ -232,10 +296,22 @@ export default function ProductsPage() {
                         ) : (
                             products.map((p) => (
                                 <tr key={p.id} className="border-b">
+                                    <td className="px-4 py-2">
+                                        {p.image_url ? (
+                                            <img
+                                                src={p.image_url}
+                                                alt={p.name}
+                                                className="w-12 h-12 object-cover rounded"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                                                -
+                                            </div>
+                                        )}
+                                    </td>
                                     <td className="px-4 py-2">{p.name}</td>
                                     <td className="px-4 py-2">{p.category_name || "Uncategorized"}</td>
-                                    <td className="px-4 py-2">₱{Number(p.price)?.toFixed(2)}</td>
-                                    <td className="px-4 py-2">{p.barcode}</td>
+                                    <td className="px-4 py-2">₱{Number(p.price).toFixed(2)}</td>
                                     <td className="px-4 py-2">
                                         <button
                                             onClick={() => setEditingProduct(p)}

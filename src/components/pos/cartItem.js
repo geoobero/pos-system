@@ -1,12 +1,9 @@
 "use client";
 
-import Button from "@/components/ui/button";
-
 export default function CartItem({
     item,
     onIncrease,
     onDecrease,
-    onRemove,
 }) {
     return (
         <div className="flex items-center justify-between border-b py-3">
@@ -16,9 +13,8 @@ export default function CartItem({
             </div>
 
             <div className="flex gap-2">
-                <button onClick={onDecrease} className="px-2 py-1 bg-gray-200 rounded">-</button>
-                <button onClick={onIncrease} className="px-2 py-1 bg-gray-200 rounded">+</button>
-                <button onClick={onRemove} className="px-2 py-1 bg-red-500 text-white rounded">x</button>
+                <button onClick={onDecrease} className="px-2 min-w-15 text-xl py-1 bg-gray-200 rounded hover:bg-gray-300">-</button>
+                <button onClick={onIncrease} className="px-2 min-w-15 text-xl py-1 bg-gray-200 rounded hover:bg-gray-300">+</button>
             </div>
         </div>
     );

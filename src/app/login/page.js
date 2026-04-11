@@ -1,32 +1,33 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "@/lib/supabase/auth";
+import { signIn, syncAuthSession } from "@/lib/supabase/auth";
 import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const router = useRouter();
-
-    const [error, setError] = useState(() => {
-        if (typeof window === "undefined") return "";
-        const params = new URLSearchParams(window.location.search);
-        return params.get("reason") === "inactivity"
-            ? "Session expired due to inactivity. Please login again."
-            : "";
-    });
 
     async function handleSubmit(e) {
         e.preventDefault();
         setLoading(true);
         setError("");
 
-        const { error: authError } = await signIn(email, password);
+        const { data, error: authError } = await signIn(email, password);
 
         if (authError) {
             setError(authError.message);
+            setLoading(false);
+            return;
+        }
+
+        const { error: syncError } = await syncAuthSession(data.session);
+
+        if (syncError) {
+            setError(syncError.message);
             setLoading(false);
             return;
         }
@@ -80,7 +81,6 @@ export default function LoginPage() {
                         <p className="text-red-600 text-sm text-center">{error}</p>
                     )}
                 </form>
-
             </div>
         </main>
     );

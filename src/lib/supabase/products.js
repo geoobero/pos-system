@@ -1,5 +1,9 @@
 import { supabase } from "./client";
 
+function buildValidationError(message) {
+    return { data: null, error: new Error(message) };
+}
+
 // Get all products with category name
 export async function getProducts() {
     const { data, error } = await supabase
@@ -22,18 +26,46 @@ export async function getProducts() {
 }
 
 // Create a product
-export async function createProduct({ name, price, barcode, category }) {
+export async function createProduct({ name, price, category, image_url }) {
+    if (!name?.trim()) {
+        return buildValidationError("Product name is required.");
+    }
+
+    if (!Number.isFinite(Number(price))) {
+        return buildValidationError("Product price must be a valid number.");
+    }
+
+    if (!category?.trim()) {
+        return buildValidationError("Category is required.");
+    }
+
     const { data, error } = await supabase
         .from("products")
-        .insert([{ name, price, barcode, category }]);
+        .insert([{ name, price, category, image_url }]);
     return { data, error };
 }
 
 // Update a product
-export async function updateProduct(id, { name, price, barcode, category }) {
+export async function updateProduct(id, { name, price, category, image_url }) {
+    if (!id) {
+        return buildValidationError("Product id is required.");
+    }
+
+    if (!name?.trim()) {
+        return buildValidationError("Product name is required.");
+    }
+
+    if (!Number.isFinite(Number(price))) {
+        return buildValidationError("Product price must be a valid number.");
+    }
+
+    if (!category?.trim()) {
+        return buildValidationError("Category is required.");
+    }
+
     const { data, error } = await supabase
         .from("products")
-        .update({ name, price, barcode, category })
+        .update({ name, price, category, image_url })
         .eq("id", id);
     return { data, error };
 }
