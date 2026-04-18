@@ -32,7 +32,7 @@ export default function Payment({ total = 0, onConfirm }) {
   };
 
   return (
-    <div className="bg-white rounded shadow p-4 flex flex-col gap-4 text-gray-600">
+    <div className="bg-white rounded shadow p-2 flex flex-col gap-4 text-gray-600">
       <h2 className="text-lg font-semibold">Payment</h2>
       <p className="text-gray-700">Total: ₱{total.toFixed(2)}</p>
 
