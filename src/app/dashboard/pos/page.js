@@ -15,6 +15,7 @@ export default function POSPage() {
     const [products, setProducts] = useState([]);
     const [categories, setCategories] = useState([]);
     const [cartItems, setCartItems] = useState([]);
+    const [cartExpanded, setCartExpanded] = useState(true);
     const [transaction, setTransaction] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -123,9 +124,9 @@ export default function POSPage() {
     if (error) return <Error message={error} />;
 
     return (
-        <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-140px)]">
+        <div className="flex flex-col xl:flex-row gap-2 h-[calc(100vh-140px)]">
             {/* Left Side - Products */}
-            <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-50 rounded-lg p-4">
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-50 rounded-lg p-3">
                 {/* Category Tabs */}
                 <div className="flex gap-2 overflow-x-auto pb-3 mb-3 shrink-0 border-b border-gray-200">
                     <button
@@ -151,30 +152,30 @@ export default function POSPage() {
                     ))}
                 </div>
 
-                {/* Product Cards */}
-                <div className="flex-1 overflow-y-auto">
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {/* Product Cards - scrollable */}
+                <div className="flex-1 overflow-y-auto px-1">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
                         {filteredProducts.map((product) => (
                             <button
                                 key={product.id}
                                 onClick={() => addToCart(product)}
-                                className="bg-white rounded-xl shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 p-4 flex flex-col items-center"
+                                className="bg-white rounded-xl shadow-sm hover:shadow-lg cursor-pointer transition-all duration-200 p-3 flex flex-col items-center"
                             >
                                 {product.image_url ? (
                                     <img
                                         src={product.image_url}
                                         alt={product.name}
-                                        className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-lg mb-3"
+                                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg mb-2"
                                     />
                                 ) : (
-                                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-3 flex items-center justify-center text-gray-400">
-                                        <span className="text-3xl">+</span>
+                                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg mb-2 flex items-center justify-center text-gray-400">
+                                        <span className="text-2xl">+</span>
                                     </div>
                                 )}
                                 <span className="text-sm font-semibold text-gray-800 line-clamp-2 text-center w-full">
                                     {product.name}
                                 </span>
-                                <span className="text-xl font-bold text-blue-600 mt-2">
+                                <span className="text-lg font-bold text-blue-600 mt-1">
                                     ₱{Number(product.price).toFixed(2)}
                                 </span>
                             </button>
@@ -190,17 +191,19 @@ export default function POSPage() {
             </div>
 
             {/* Right Side - Cart + Payment */}
-            <div className="w-full lg:w-96 flex-shrink-0 flex flex-col gap-4 overflow-y-scroll">
-                <div className="bg-white rounded-lg p-4 flex-1 flex flex-col">
+            <div className="w-full xl:w-80 2xl:w-96 flex-shrink-0 flex flex-col gap-2">
+                <div className="bg-white rounded-lg flex-1 overflow-hidden flex flex-col">
                     <Cart
                         initialItems={cartItems}
                         onIncrease={increaseQuantity}
                         onDecrease={decreaseQuantity}
                         onRemove={removeItem}
+                        isExpanded={cartExpanded}
+                        onToggleExpand={setCartExpanded}
                     />
                 </div>
 
-                <div className="bg-white rounded-lg shadow-lg p-4">
+                <div className="bg-white rounded-lg shadow-lg p-3">
                     <Payment
                         total={cartItems.reduce((sum, i) => sum + i.price * i.quantity, 0)}
                         onConfirm={handleConfirmPayment}
