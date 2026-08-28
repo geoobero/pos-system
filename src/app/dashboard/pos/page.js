@@ -10,6 +10,7 @@ import { createTransaction } from "@/lib/supabase/transactions";
 import Loading from "@/components/shared/loading";
 import Error from "@/components/shared/error";
 import { useAuth } from "@/contexts/authContext";
+import { usePOSSearch } from "@/contexts/posSearchContext";
 
 export default function POSPage() {
     const [products, setProducts] = useState([]);
@@ -21,6 +22,8 @@ export default function POSPage() {
     const [error, setError] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("all");
     const { user } = useAuth();
+    const { productSearch } = usePOSSearch();
+    const normalizedSearch = productSearch.trim().toLowerCase();
 
     const startNewSale = () => {
         setTransaction(null);
@@ -49,11 +52,19 @@ export default function POSPage() {
         loadData();
     }, []);
 
-    const filteredProducts = selectedCategory === "all"
-        ? products
-        : products.filter(p => p.category === selectedCategory);
+    const filteredProducts = products.filter((product) => (
+        product.quantity > 0
+        && (selectedCategory === "all" || product.category === selectedCategory)
+        && (!normalizedSearch || product.name.toLowerCase().includes(normalizedSearch))
+    ));
 
     const addToCart = (product) => {
+        const existingItem = cartItems.find((item) => item.id === product.id);
+        if (existingItem && existingItem.quantity >= product.quantity) {
+            alert(`Only ${product.quantity} ${product.name} available in stock.`);
+            return;
+        }
+
         setCartItems((prev) => {
             const exists = prev.find((item) => item.id === product.id);
             if (exists) {
@@ -61,11 +72,19 @@ export default function POSPage() {
                     item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
                 );
             }
-            return [...prev, { ...product, quantity: 1 }];
+            return [...prev, { ...product, stockQuantity: product.quantity, quantity: 1 }];
         });
     };
 
     const increaseQuantity = (id) => {
+        const cartItem = cartItems.find((item) => item.id === id);
+        if (!cartItem || cartItem.quantity >= cartItem.stockQuantity) {
+            if (cartItem) {
+                alert(`Only ${cartItem.stockQuantity} ${cartItem.name} available in stock.`);
+            }
+            return;
+        }
+
         setCartItems((prev) =>
             prev.map((item) =>
                 item.id === id ? { ...item, quantity: item.quantity + 1 } : item
@@ -104,15 +123,21 @@ export default function POSPage() {
             }
 
             setTransaction({
-                items: cartItems,
-                total,
-                cash,
-                change,
+                items: data?.items || cartItems,
+                total: Number(data?.total ?? total),
+                cash: Number(data?.cash ?? cash),
+                change: Number(data?.change ?? change),
                 cashier: cashierName,
                 date: data?.created_at || new Date().toISOString(),
             });
 
             setCartItems([]);
+            const { data: refreshedProducts, error: productsError } = await getProducts();
+            if (productsError) {
+                alert("Payment was successful, but product stock could not be refreshed.");
+            } else {
+                setProducts(refreshedProducts || []);
+            }
         } catch (err) {
             alert("Transaction failed!");
         } finally {
@@ -184,7 +209,7 @@ export default function POSPage() {
 
                     {filteredProducts.length === 0 && (
                         <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-                            <p>No products in this category</p>
+                            <p>No available products found</p>
                         </div>
                     )}
                 </div>

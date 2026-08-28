@@ -26,7 +26,7 @@ export async function getProducts() {
 }
 
 // Create a product
-export async function createProduct({ name, price, category, image_url }) {
+export async function createProduct({ name, price, category, quantity, image_url }) {
     if (!name?.trim()) {
         return buildValidationError("Product name is required.");
     }
@@ -39,14 +39,18 @@ export async function createProduct({ name, price, category, image_url }) {
         return buildValidationError("Category is required.");
     }
 
+    if (!Number.isInteger(Number(quantity)) || Number(quantity) < 0) {
+        return buildValidationError("Product quantity must be a whole number that is zero or greater.");
+    }
+
     const { data, error } = await supabase
         .from("products")
-        .insert([{ name, price, category, image_url }]);
+        .insert([{ name, price, category, quantity: Number(quantity), image_url }]);
     return { data, error };
 }
 
 // Update a product
-export async function updateProduct(id, { name, price, category, image_url }) {
+export async function updateProduct(id, { name, price, category, quantity, image_url }) {
     if (!id) {
         return buildValidationError("Product id is required.");
     }
@@ -63,9 +67,13 @@ export async function updateProduct(id, { name, price, category, image_url }) {
         return buildValidationError("Category is required.");
     }
 
+    if (!Number.isInteger(Number(quantity)) || Number(quantity) < 0) {
+        return buildValidationError("Product quantity must be a whole number that is zero or greater.");
+    }
+
     const { data, error } = await supabase
         .from("products")
-        .update({ name, price, category, image_url })
+        .update({ name, price, category, quantity: Number(quantity), image_url })
         .eq("id", id);
     return { data, error };
 }

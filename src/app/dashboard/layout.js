@@ -4,6 +4,7 @@ import Sidebar from "@/components/layout/sidebar";
 import Navbar from "@/components/layout/navbar";
 import Footer from "@/components/layout/footer";
 import { useAuth } from "@/contexts/authContext";
+import { POSSearchProvider } from "@/contexts/posSearchContext";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import Loading from "@/components/shared/loading";
@@ -56,24 +57,26 @@ export default function DashboardLayout({ children }) {
     }
 
     return (
-        <div className="flex min-h-screen">
-            {/* Mobile sidebar overlay */}
-            {sidebarOpen && (
-                <div 
-                    className="fixed inset-0 bg-black/7 z-40 lg:hidden"
-                    onClick={() => setSidebarOpen(false)}
-                />
-            )}
-            
-            <Sidebar isAdmin={isAdmin} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-            
-            <div className="flex flex-col flex-1">
-                <Navbar onMenuClick={() => setSidebarOpen(true)} />
-                <main className="flex-1 p-4 md:p-6 bg-gray-50">
-                    {children}
-                </main>
-                <Footer />
+        <POSSearchProvider>
+            <div className="flex min-h-screen">
+                {/* Mobile sidebar overlay */}
+                {sidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/7 z-40 lg:hidden"
+                        onClick={() => setSidebarOpen(false)}
+                    />
+                )}
+
+                <Sidebar isAdmin={isAdmin} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+                <div className="flex flex-col flex-1">
+                    <Navbar onMenuClick={() => setSidebarOpen(true)} />
+                    <main className="flex-1 p-4 md:p-6 bg-gray-50">
+                        {children}
+                    </main>
+                    <Footer />
+                </div>
             </div>
-        </div>
+        </POSSearchProvider>
     );
 }

@@ -26,13 +26,13 @@ export async function createTransaction({ items, total, cash, change, cashier })
         return buildValidationError("Cashier is required.");
     }
 
-    const { data, error } = await supabase
-        .from("transactions")
-        .insert([
-            { items, total, cash, change, cashier },
-        ])
-        .select("*")
-        .single();
+    const { data, error } = await supabase.rpc("complete_sale", {
+        p_items: items,
+        p_total: total,
+        p_cash: cash,
+        p_change: change,
+        p_cashier: cashier,
+    });
     return { data, error };
 }
 

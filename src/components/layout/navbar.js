@@ -2,9 +2,14 @@
 
 import { useAuth } from "@/contexts/authContext";
 import { signOut } from "@/lib/supabase/auth";
+import { usePOSSearch } from "@/contexts/posSearchContext";
+import { usePathname } from "next/navigation";
 
 export default function Navbar({ onMenuClick }) {
-    const { user, isAdmin } = useAuth();
+    const { isAdmin } = useAuth();
+    const { productSearch, setProductSearch } = usePOSSearch();
+    const pathname = usePathname();
+    const isPOSPage = pathname === "/dashboard/pos";
 
     const handleSignOut = async () => {
         await signOut();
@@ -25,6 +30,19 @@ export default function Navbar({ onMenuClick }) {
                     </svg>
                 </button>
             </div>
+
+            {isPOSPage && (
+                <div className="flex-1 max-w-md mx-3">
+                    <input
+                        type="search"
+                        value={productSearch}
+                        onChange={(event) => setProductSearch(event.target.value)}
+                        placeholder="Search products"
+                        aria-label="Search products"
+                        className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-700 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                </div>
+            )}
 
             <div className="flex items-center gap-4">
                 <span className="text-sm text-gray-600 hidden sm:block cursor-default">

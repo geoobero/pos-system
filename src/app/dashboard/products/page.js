@@ -19,6 +19,7 @@ export default function ProductsPage() {
         name: "",
         categoryId: "",
         price: "",
+        quantity: "",
     });
 
     const [newImage, setNewImage] = useState(null);
@@ -79,7 +80,7 @@ export default function ProductsPage() {
     async function handleAddProduct(e) {
         e.preventDefault();
 
-        if (!newProduct.name || !newProduct.categoryId || !newProduct.price)
+        if (!newProduct.name || !newProduct.categoryId || !newProduct.price || newProduct.quantity === "")
             return;
 
         let imageUrl = null;
@@ -91,6 +92,7 @@ export default function ProductsPage() {
             name: newProduct.name,
             price: parseFloat(newProduct.price),
             category: newProduct.categoryId,
+            quantity: parseInt(newProduct.quantity, 10),
             image_url: imageUrl,
         });
 
@@ -102,7 +104,7 @@ export default function ProductsPage() {
         const { data: refreshedProducts } = await getProducts();
         setProducts(refreshedProducts || []);
 
-        setNewProduct({ name: "", categoryId: "", price: "" });
+        setNewProduct({ name: "", categoryId: "", price: "", quantity: "" });
         setNewImage(null);
     }
 
@@ -120,6 +122,7 @@ export default function ProductsPage() {
             name: editingProduct.name,
             category: editingProduct.category,
             price: parseFloat(editingProduct.price),
+            quantity: parseInt(editingProduct.quantity, 10),
             image_url: imageUrl,
         });
 
@@ -156,7 +159,7 @@ export default function ProductsPage() {
             {editingProduct && (
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                     <h3 className="font-semibold mb-3">Edit Product</h3>
-                    <form onSubmit={handleUpdateProduct} className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                    <form onSubmit={handleUpdateProduct} className="grid grid-cols-1 md:grid-cols-5 gap-2">
                         <input
                             type="text"
                             placeholder="Product name"
@@ -180,6 +183,15 @@ export default function ProductsPage() {
                             onChange={(e) => setEditingProduct({ ...editingProduct, price: e.target.value })}
                         />
                         <input
+                            type="number"
+                            placeholder="Quantity"
+                            min="0"
+                            step="1"
+                            className="border border-gray-300 rounded px-3 py-2"
+                            value={editingProduct.quantity}
+                            onChange={(e) => setEditingProduct({ ...editingProduct, quantity: e.target.value })}
+                        />
+                        <input
                             type="file"
                             accept="image/*"
                             className="border border-gray-300 rounded px-3 py-2"
@@ -191,7 +203,7 @@ export default function ProductsPage() {
                             }}
                         />
                         {/* Show current image */}
-                        <div className="md:col-span-4">
+                        <div className="md:col-span-5">
                             {editingProduct.image_url ? (
                                 <div className="flex items-center gap-4">
                                     <img
@@ -207,7 +219,7 @@ export default function ProductsPage() {
                                 <span className="text-sm text-gray-500">No image set</span>
                             )}
                         </div>
-                        <div className="md:col-span-4 flex gap-2">
+                        <div className="md:col-span-5 flex gap-2">
                             <button
                                 type="submit"
                                 disabled={uploading}
@@ -229,7 +241,7 @@ export default function ProductsPage() {
 
             <form
                 onSubmit={handleAddProduct}
-                className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-6"
+                className="grid grid-cols-1 md:grid-cols-5 gap-2 mb-6"
             >
                 <input
                     type="text"
@@ -260,6 +272,16 @@ export default function ProductsPage() {
                 />
 
                 <input
+                    type="number"
+                    placeholder="Quantity"
+                    min="0"
+                    step="1"
+                    className="border border-gray-300 rounded px-3 py-2"
+                    value={newProduct.quantity}
+                    onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+                />
+
+                <input
                     type="file"
                     accept="image/*"
                     className="border border-gray-300 rounded px-3 py-2"
@@ -269,7 +291,7 @@ export default function ProductsPage() {
                 <button
                     type="submit"
                     disabled={uploading}
-                    className="md:col-span-4 max-w-50 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+                    className="md:col-span-5 max-w-50 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                     {uploading ? "Adding..." : "Add Product"}
                 </button>
@@ -283,51 +305,58 @@ export default function ProductsPage() {
                             <th className="px-4 py-2 text-left">Name</th>
                             <th className="px-4 py-2 text-left">Category</th>
                             <th className="px-4 py-2 text-left">Price</th>
+                            <th className="px-4 py-2 text-left">Quantity</th>
                             <th className="px-4 py-2 text-left">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {products.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                <td colSpan={6} className="px-4 py-8 text-center text-gray-500">
                                     No products found. Add one above.
                                 </td>
                             </tr>
                         ) : (
-                            products.map((p) => (
-                                <tr key={p.id} className="border-b">
-                                    <td className="px-4 py-2">
-                                        {p.image_url ? (
-                                            <img
-                                                src={p.image_url}
-                                                alt={p.name}
-                                                className="w-12 h-12 object-cover rounded"
-                                            />
-                                        ) : (
-                                            <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                                                -
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-2">{p.name}</td>
-                                    <td className="px-4 py-2">{p.category_name || "Uncategorized"}</td>
-                                    <td className="px-4 py-2">₱{Number(p.price).toFixed(2)}</td>
-                                    <td className="px-4 py-2">
-                                        <button
-                                            onClick={() => setEditingProduct(p)}
-                                            className="text-blue-600 hover:underline text-sm mr-3"
-                                        >
-                                            Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteProduct(p.id)}
-                                            className="text-red-600 hover:underline text-sm"
-                                        >
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))
+                            products.map((p) => {
+                                const isOutOfStock = p.quantity === 0;
+                                const stockTextClass = isOutOfStock ? "text-red-600 font-semibold" : "";
+
+                                return (
+                                    <tr key={p.id} className="border-b">
+                                        <td className="px-4 py-2">
+                                            {p.image_url ? (
+                                                <img
+                                                    src={p.image_url}
+                                                    alt={p.name}
+                                                    className="w-12 h-12 object-cover rounded"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center text-gray-400">
+                                                    -
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className={`px-4 py-2 ${stockTextClass}`}>{p.name}</td>
+                                        <td className={`px-4 py-2 ${stockTextClass}`}>{p.category_name || "Uncategorized"}</td>
+                                        <td className={`px-4 py-2 ${stockTextClass}`}>₱{Number(p.price).toFixed(2)}</td>
+                                        <td className={`px-4 py-2 ${stockTextClass}`}>{p.quantity}</td>
+                                        <td className="px-4 py-2">
+                                            <button
+                                                onClick={() => setEditingProduct(p)}
+                                                className="text-blue-600 hover:underline text-sm mr-3"
+                                            >
+                                                Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteProduct(p.id)}
+                                                className="text-red-600 hover:underline text-sm"
+                                            >
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                );
+                            })
                         )}
                     </tbody>
                 </table>

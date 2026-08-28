@@ -14,7 +14,13 @@ export default function CartItem({
 
             <div className="flex gap-2">
                 <button onClick={onDecrease} className="px-2 min-w-15 text-xl py-1 bg-gray-200 rounded hover:bg-gray-300">-</button>
-                <button onClick={onIncrease} className="px-2 min-w-15 text-xl py-1 bg-gray-200 rounded hover:bg-gray-300">+</button>
+                <button
+                    onClick={onIncrease}
+                    disabled={item.quantity >= item.stockQuantity}
+                    className="px-2 min-w-15 text-xl py-1 bg-gray-200 rounded hover:bg-gray-300 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                    +
+                </button>
             </div>
         </div>
     );
